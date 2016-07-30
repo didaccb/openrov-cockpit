@@ -1,0 +1,7 @@
+into src/static/webcomponents:
+
+total 12
+drwxrwxr-x 7 alarm openrov 4096 Apr  1 20:08 json-editor
+lrwxrwxrwx 1 alarm openrov   33 Apr  1 19:56 mjpeg-video-webcomponents -> openrov-mjpeg-video-webcomponent/
+drwxrwxr-x 4 alarm openrov 4096 Apr  1 19:56 openrov-mjpeg-video-webcomponent
+drwxrwxr-x 3 alarm openrov 4096 Apr  1 19:56 socket-video-h264
