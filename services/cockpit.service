@@ -1,0 +1,20 @@
+[Unit]
+Description='IRS OpenROV Cockpit version over Raspi2'
+Requires=enable-raspicam.service enable-megarovcomms.service
+After=enable-raspicam.service enable-megarovcomms.service
+
+[Service]
+ExecStart=/home/alarm/.nvm/v0.10.15/bin/node /opt/openrov/cockpit/src/cockpit.js
+ExecStop=/opt/openrov/cockpit/src/stop-cockpit.sh
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cockpit.js
+User=root
+Group=openrov
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+
+

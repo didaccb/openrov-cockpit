@@ -1,0 +1,11 @@
+[Unit]
+Description=Enables the 3.3v - 5v conversor on megarov for comms
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python2 /opt/openrov/cockpit/src/enable-comms.py
+User=root
+Group=openrov
+
+
+[Install]

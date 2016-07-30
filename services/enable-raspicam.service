@@ -1,0 +1,11 @@
+[Unit]
+Description=Enables raspi cam as /dev/video0
+
+[Service]
+Type=oneshot
+ExecStart=/opt/openrov/cockpit/src/raspicam.sh
+User=root
+Group=openrov
+ExecStop=
+
+[Install]
