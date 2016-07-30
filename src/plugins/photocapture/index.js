@@ -29,6 +29,9 @@ PhotoCapture.prototype.listen = function listen(deps) {
         dep.io.sockets.emit('photo-added', '/photos/' + path.basename(filename));
       });
     });
+    socket.on('switchCaptureMode', function(){
+    	dep.rov.camera.switchCaptureMode();
+    });
   });
 };
 PhotoCapture.prototype.enumeratePhotos = function (deps, callback) {

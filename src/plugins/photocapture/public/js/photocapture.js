@@ -10,6 +10,7 @@
     $('#diagnostic').after('<div class="drop-in-right" id="photos"></div>');
     $('#menuitems').append('<li><a href="#" id="show-photos">Photos</a></li>');
     $('#buttonPanel').append('<button id="capture-photo" class="btn">Capture</button>');
+    $('#buttonPanel').append('<button id="switch-capture-mode" class="btn">Switch Res.</button>');
     $('#keyboardInstructions').append('<p>press <i>c</i> to capture an image</p>');
     var self = this;
     var jsFileLocation = urlOfJsFile('photocapture.js');
@@ -40,6 +41,11 @@
     $('#capture-photo').click(function () {
       photoc.cockpit.socket.emit('snapshot');
       console.log('send snapshot request to server');
+    });
+
+    $('#switch-capture-mode').click(function(){
+    	photoc.cockpit.socket.emit('switchCaptureMode');
+	console.log('send switchCaptureMode to reserver');
     });
 
     photoc.cockpit.emit('inputController.register',

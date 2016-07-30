@@ -44,11 +44,13 @@ nconf.defaults({
   'sample_freq': 20,
   'dead_zone':  10,
   'video_frame_rate': 30,
-  'video_resolution': 'SXGA',
+  'video_resolution': '640x480',//'SXGA',
+  'photo_resolution': '2592x1944', //Requires reinit the mjpeg_streamer process
+  //'photo_resolution': 'SXGA',
   'video_device': '/dev/video0',
   'video_port': 8090,
   'port': 8080,
-  'serial': '/dev/ttyO1',
+  'serial': '/dev/ttyAMA0',
   'serial_baud': 115200,
   'dashboardURL': '',
   'USE_MOCK' : false
@@ -81,6 +83,7 @@ module.exports = {
   dead_zone: nconf.get('dead_zone'),
   video_frame_rate: nconf.get('video_frame_rate'),
   video_resolution: nconf.get('video_resolution'),
+  photo_resolution: nconf.get('photo_resolution'),
   video_device: nconf.get('video_device'),
   video_port: nconf.get('video_port'),
   port: nconf.get('port'),

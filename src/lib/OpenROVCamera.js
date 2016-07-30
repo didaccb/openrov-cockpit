@@ -16,7 +16,7 @@ var OpenROVCamera = function (options) {
   // rename to correspond with your C++ compilation
   var default_opts = {
       device: CONFIG.video_device,
-      resolution: CONFIG.video_resolution, 
+      resolution: CONFIG.video_resolution,
       framerate: CONFIG.video_frame_rate,
       port: CONFIG.video_port
     };
@@ -25,12 +25,9 @@ var OpenROVCamera = function (options) {
   camera.IsCapturing = function () {
     return _capturing;
   };
-  var args = [
-      '-i',
-      '/usr/local/lib/input_uvc.so -r ' + options.resolution + ' -f ' + options.framerate,
-      '-o',
-      '/usr/local/lib/output_http.so -p ' + options.port
-    ];
+
+  var ffmpeg_process;
+  var capture_callback;
   // End camera process gracefully
   camera.close = function () {
     if (!_capturing)
@@ -40,20 +37,70 @@ var OpenROVCamera = function (options) {
     logger.log('sending SIGHUP to capture process');
     process.kill(capture_process.pid, 'SIGHUP');
   };
+
+  camera.switchCaptureMode = function()
+  {
+	/*
+    	console.log('switching capture mode...');
+  	if(options.resolution == CONFIG.video_resolution)
+		options.resolution = CONFIG.photo_resolution;
+	else
+		options.resolution = CONFIG.video_resolution;
+	console.log('new capture resolution: ', options.resolution);
+	console.log('reinitializing capture process...');
+      	capture_process.on('exit', function (code) {
+		console.log('camera closed to change the resolution');
+		camera.capture(capture_callback);
+      	});
+	camera.close();
+	*/
+  };
+
   camera.snapshot = function (callback) {
     if (!_capturing)
-      return;
-    var filename = CONFIG.preferences.get('photoDirectory') + '/ROV' + moment().format('YYYYMMDDHHmmss') + '.jpg';
-    request('http://localhost:' + options.port + '/?action=snapshot').pipe(fs.createWriteStream(filename));
-    callback(filename);
+	    return;
+    capture_process.on('exit', function (code) {
+		    var filename = CONFIG.preferences.get('photoDirectory') + '/ROV' + moment().format('YYYYMMDDHHmmss') + '.jpg';
+//		    request('http://localhost:' + options.port + '/?action=snapshot').pipe(fs.createWriteStream(filename));
+		    var args = [
+		      '-f',
+		      'video4linux2',
+		      '-s',
+		      CONFIG.photo_resolution,
+		      '-i',
+		      '/dev/video0',
+		      '-vframes',
+		      '1',
+		      filename,
+		      '-y'
+		    ];
+		    ffmpeg_process = spawn('ffmpeg', args);
+		    ffmpeg_process.on('exit', function(code){
+			    callback(filename);
+			    camera.capture(capture_callback);
+		    });
+		  });
+
+    camera.close();
+
   };
   var restartCount = 0;
   // Actual camera capture starting mjpg-stremer
   var capture;
   capture = function (callback) {
+    capture_callback = callback;
+    var args = [
+      '-i',
+      '/usr/local/lib/input_uvc.so -r ' + options.resolution + ' -y -f ' + options.framerate,
+      '-o',
+      '/usr/local/lib/output_http.so -p ' + options.port
+    ];
+
     logger.log('initiating camera on', options.device);
-    logger.log('ensure beagle is at 100% cpu for this camera');
-    spawn('cpufreq-set', [
+    logger.log('ensure Rpi2 is at 100% cpu for this camera');
+
+    spawn('cpupower', [
+      'frequency-set',
       '-g',
       'performance'
     ]);
@@ -77,15 +124,19 @@ var OpenROVCamera = function (options) {
       });
       console.log('camera started');
       capture_process.on('exit', function (code) {
-        console.log('child process exited with code ' + code);
-        _capturing = false;
-        camera.emit('error.device', code);
-        if ( restartCount < 10 ) {
-          console.log('starting new camera process for the ' + restartCount + ' time');
-          restartCount = restartCount + 1;
-          capture(callback);
-        }
-        else { console.log('camera process crashed too many times. giving up'); }
+	if(_capturing)
+	{
+		console.log('child process exited with code ' + code);
+		_capturing = false;
+		camera.emit('error.device', code);
+		if ( restartCount < 10 ) {
+	            console.log('starting new camera process for the ' + restartCount + ' time');
+	            restartCount = restartCount + 1;
+	      	    capture(callback);
+		}
+		else { console.log('camera process crashed too many times. giving up'); }
+	}
+	else console.log('camera closed');
       });
     });
   };
